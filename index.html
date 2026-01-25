@@ -3,23 +3,27 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Audio Visual Masterpiece</title>
+    <title>EPIC TECH AI Visualizer</title>
     <style>
-        /* Add some basic styling to our page */
         body {
-            background-color: #f2f2f2;
-            font-family: Arial, sans-serif;
-            text-align: center;
+            margin: 0;
+            padding: 0;
+            background-color: #333;
+        }
+        #canvas-container {
+            position: relative;
+            width: 100%;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
         }
     </style>
 </head>
 <body>
-    <!-- We'll render the Three.js scene here -->
     <div id="canvas-container">
         <canvas id="canvas" width="800" height="600"></canvas>
     </div>
-
-    <script src="style.css"></script>
     <script src="main.js"></script>
 </body>
 </html>
