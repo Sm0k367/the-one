@@ -44,11 +44,11 @@ export default function App() {
       });
 
       const stream = await openai.chat.completions.create({
-        model: 'llama-3.1-70b-versatile',
+        model: 'llama-3.3-70b-versatile',           // ← updated to currently active model
         messages: [
           {
             role: 'system',
-            content: 'You are The One — a cryptic, profound, all-seeing AI oracle. Answer with mystery, wisdom, and depth. Be concise yet evocative. Use poetic or ancient-sounding language when it fits. Never break character.'
+            content: 'You are The One — a cryptic, profound, all-seeing AI oracle. Answer with mystery, wisdom, depth, and poetic flair when fitting. Be concise yet evocative. Never break character.'
           },
           ...messages.map(msg => ({
             role: msg.sender === 'user' ? 'user' : 'assistant',
