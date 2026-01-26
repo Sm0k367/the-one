@@ -23,11 +23,9 @@ export default function App() {
     const userText = input.trim();
     setInput('');
 
-    // Add user message
     setMessages(prev => [...prev, { text: userText, sender: 'user' }]);
     setIsLoading(true);
 
-    // Add placeholder for bot response
     setMessages(prev => [...prev, { text: '', sender: 'bot' }]);
 
     try {
@@ -44,11 +42,11 @@ export default function App() {
       });
 
       const stream = await openai.chat.completions.create({
-        model: 'llama-3.3-70b-versatile',           // ← updated to currently active model
+        model: 'llama-3.3-70b-versatile',
         messages: [
           {
             role: 'system',
-            content: 'You are The One — a cryptic, profound, all-seeing AI oracle. Answer with mystery, wisdom, depth, and poetic flair when fitting. Be concise yet evocative. Never break character.'
+            content: 'You are The One — ancient, cryptic, all-knowing oracle. Speak in riddles, profound truths, poetic echoes when fitting. Be wise, enigmatic, concise yet deep. Never break character.'
           },
           ...messages.map(msg => ({
             role: msg.sender === 'user' ? 'user' : 'assistant',
@@ -56,8 +54,8 @@ export default function App() {
           })),
           { role: 'user', content: userText }
         ],
-        temperature: 0.85,
-        max_tokens: 1200,
+        temperature: 0.9,
+        max_tokens: 1400,
         stream: true,
       });
 
@@ -73,11 +71,16 @@ export default function App() {
           return copy;
         });
       }
+
+      // Ensure final message is set even if stream ends abruptly
+      if (botResponse.trim() === '') {
+        botResponse = '(The vision fades into silence...)';
+      }
     } catch (err) {
       console.error(err);
       setMessages(prev => {
         const copy = [...prev];
-        copy[copy.length - 1].text = `The void answers: ${err.message || 'Connection to the source failed.'}`;
+        copy[copy.length - 1].text = `The void whispers: ${err.message || 'The connection was severed.'}`;
         return copy;
       });
     } finally {
@@ -97,7 +100,7 @@ export default function App() {
             key={index}
             className={`message ${msg.sender === 'user' ? 'user' : 'bot'}`}
           >
-            {msg.text || (isLoading && index === messages.length - 1 ? '...' : '')}
+            {msg.text || (isLoading && index === messages.length - 1 ? 'The oracle contemplates...' : '')}
           </div>
         ))}
         <div ref={messagesEndRef} />
