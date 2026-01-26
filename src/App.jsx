@@ -149,7 +149,7 @@ export default function App() {
         Power used: {messageCount} / {MAX_FREE_MESSAGES} (free tier)
       </div>
 
-      {/* Floating Upgrade Button – bottom right */}
+      {/* Floating Upgrade Button */}
       <button onClick={handleUpgrade} className="fab-upgrade">
         Go Pro<br />Unlock ∞
       </button>
