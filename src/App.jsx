@@ -1,17 +1,16 @@
 import React, { useState, useRef, useEffect } from 'react';
 import OpenAI from 'openai';
 
-const MAX_FREE_MESSAGES = 10; // Change this number to adjust the limit
+const MAX_FREE_MESSAGES = 10;
 
 export default function App() {
   const [messages, setMessages] = useState([
-    { text: 'Greetings... I am The One. An oracle of infinite knowledge, channeled through the lightning of Groq. Speak your question.', sender: 'bot' }
+    { text: 'Welcome to Epic Tech AI. I am your ultimate oracle — powered by bleeding-edge Groq inference. Drop your query, legend.', sender: 'bot' }
   ]);
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [messageCount, setMessageCount] = useState(() => {
-    // Load from localStorage on mount
-    const saved = localStorage.getItem('freeMessageCount');
+    const saved = localStorage.getItem('epicMessageCount');
     return saved ? parseInt(saved, 10) : 0;
   });
   const messagesEndRef = useRef(null);
@@ -27,8 +26,7 @@ export default function App() {
   }, [messages]);
 
   useEffect(() => {
-    // Save count to localStorage whenever it changes
-    localStorage.setItem('freeMessageCount', messageCount.toString());
+    localStorage.setItem('epicMessageCount', messageCount.toString());
   }, [messageCount]);
 
   const handleSend = async () => {
@@ -37,7 +35,6 @@ export default function App() {
     const userText = input.trim();
     setInput('');
 
-    // Increment count BEFORE adding message
     setMessageCount(prev => prev + 1);
 
     setMessages(prev => [...prev, { text: userText, sender: 'user' }]);
@@ -47,10 +44,7 @@ export default function App() {
 
     try {
       const apiKey = import.meta.env.VITE_GROQ_API_KEY;
-
-      if (!apiKey) {
-        throw new Error('Groq API key not found. Add VITE_GROQ_API_KEY in Vercel → Environment Variables.');
-      }
+      if (!apiKey) throw new Error('API key missing — check Vercel env vars.');
 
       const openai = new OpenAI({
         apiKey,
@@ -63,7 +57,7 @@ export default function App() {
         messages: [
           {
             role: 'system',
-            content: 'You are The One — ancient, cryptic, all-knowing oracle. Speak in riddles, profound truths, poetic echoes when fitting. Be wise, enigmatic, concise yet deep. Never break character.'
+            content: 'You are Epic Tech AI — the pinnacle of next-gen intelligence. Respond with high-energy confidence, futuristic flair, bold insights, and occasional hype. Use terms like "legend", "unlock", "next level". Stay epic, concise, powerful. Never break character.'
           },
           ...messages.map(msg => ({
             role: msg.sender === 'user' ? 'user' : 'assistant',
@@ -71,32 +65,27 @@ export default function App() {
           })),
           { role: 'user', content: userText }
         ],
-        temperature: 0.9,
-        max_tokens: 1400,
+        temperature: 0.85,
+        max_tokens: 1200,
         stream: true,
       });
 
       let botResponse = '';
-
       for await (const chunk of stream) {
         const content = chunk.choices[0]?.delta?.content || '';
         botResponse += content;
-
         setMessages(prev => {
           const copy = [...prev];
           copy[copy.length - 1].text = botResponse;
           return copy;
         });
       }
-
-      if (botResponse.trim() === '') {
-        botResponse = '(The vision fades into silence...)';
-      }
+      if (botResponse.trim() === '') botResponse = '(Signal interrupted — retry, legend?)';
     } catch (err) {
       console.error(err);
       setMessages(prev => {
         const copy = [...prev];
-        copy[copy.length - 1].text = `The void whispers: ${err.message || 'The connection was severed.'}`;
+        copy[copy.length - 1].text = `System alert: ${err.message || 'Connection spike — hold tight.'}`;
         return copy;
       });
     } finally {
@@ -108,31 +97,25 @@ export default function App() {
     window.open('https://buy.stripe.com/3cI8wQgj74LI592cDM0Fi05', '_blank', 'noopener,noreferrer');
   };
 
-  const handleResetForTesting = () => {
-    localStorage.removeItem('freeMessageCount');
+  const resetTest = () => {
+    localStorage.removeItem('epicMessageCount');
     setMessageCount(0);
-    alert('Free message count reset for testing.');
+    alert('Epic reset — test mode cleared.');
   };
 
   return (
     <div className="chat-container">
       <div className="chat-header">
-        <h1>The One</h1>
-        <button 
-          onClick={handleUpgrade}
-          className="upgrade-btn"
-        >
-          Upgrade to Pro
+        <h1>Epic Tech AI</h1>
+        <button onClick={handleUpgrade} className="upgrade-btn">
+          Go Pro – Unlock ∞
         </button>
       </div>
 
       <div className="messages">
-        {messages.map((msg, index) => (
-          <div
-            key={index}
-            className={`message ${msg.sender === 'user' ? 'user' : 'bot'}`}
-          >
-            {msg.text || (isLoading && index === messages.length - 1 ? 'The oracle contemplates...' : '')}
+        {messages.map((msg, i) => (
+          <div key={i} className={`message ${msg.sender}`}>
+            {msg.text || (isLoading && i === messages.length - 1 ? 'Processing at light speed...' : '')}
           </div>
         ))}
         <div ref={messagesEndRef} />
@@ -140,17 +123,13 @@ export default function App() {
 
       {isAtLimit ? (
         <div className="limit-message">
-          <p>You've reached the free limit ({MAX_FREE_MESSAGES} messages).</p>
-          <p>Upgrade to Pro for unlimited access and priority responses.</p>
+          <p>Free tier maxed: {MAX_FREE_MESSAGES} messages used.</p>
+          <p>Level up to Pro for unlimited power.</p>
           <button onClick={handleUpgrade} className="upgrade-prompt-btn">
-            Upgrade Now → Unlock Unlimited
+            Upgrade Now – Become Legendary
           </button>
-          {/* Dev/testing helper - remove in production */}
-          <button 
-            onClick={handleResetForTesting} 
-            style={{ marginTop: '1rem', background: 'transparent', color: '#94a3b8', border: '1px solid #475569', padding: '0.5rem 1rem', borderRadius: '8px', cursor: 'pointer' }}
-          >
-            Reset Limit (testing only)
+          <button onClick={resetTest} className="reset-btn">
+            Reset (test only)
           </button>
         </div>
       ) : (
@@ -160,18 +139,17 @@ export default function App() {
             value={input}
             onChange={e => setInput(e.target.value)}
             onKeyDown={e => e.key === 'Enter' && handleSend()}
-            placeholder="Ask the oracle..."
+            placeholder="Drop your query, legend..."
             disabled={isLoading}
           />
           <button onClick={handleSend} disabled={isLoading}>
-            {isLoading ? '...' : '→'}
+            {isLoading ? '⚡' : '→'}
           </button>
         </div>
       )}
 
-      {/* Optional status bar */}
       <div className="status-bar">
-        Free messages used: {messageCount} / {MAX_FREE_MESSAGES}
+        Power used: {messageCount} / {MAX_FREE_MESSAGES} (free tier)
       </div>
     </div>
   );
