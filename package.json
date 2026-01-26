@@ -1,15 +1,19 @@
 {
-  "name": "chatbot-mobile-app",
-  "version": "1.0.0",
-  "dependencies": {
-    "react-native": "^0.68.3",
-    "react-native-gesture-handler": "^1.6.0",
-    "react-native-screens": "^2.10.1"
-  },
+  "name": "the-one",
+  "private": true,
+  "version": "0.0.1",
+  "type": "module",
   "scripts": {
-    "start": "react-native start",
-    "android": "javadoc android",
-    "ios": "javadoc ios",
-    "test": "jest"
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-react": "^4.3.1",
+    "vite": "^5.4.8"
   }
 }
