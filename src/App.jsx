@@ -107,11 +107,6 @@ export default function App() {
     <div className="chat-container">
       <header className="chat-header">
         <h1>Epic Tech AI</h1>
-        <div className="header-actions">
-          <button onClick={handleUpgrade} className="upgrade-btn">
-            Go Pro – Unlock ∞
-          </button>
-        </div>
       </header>
 
       <div className="messages">
@@ -153,6 +148,11 @@ export default function App() {
       <div className="status-bar">
         Power used: {messageCount} / {MAX_FREE_MESSAGES} (free tier)
       </div>
+
+      {/* Floating Upgrade Button – bottom right */}
+      <button onClick={handleUpgrade} className="fab-upgrade">
+        Go Pro<br />Unlock ∞
+      </button>
     </div>
   );
 }
