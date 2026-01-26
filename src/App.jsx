@@ -1,13 +1,22 @@
 import React, { useState, useRef, useEffect } from 'react';
 import OpenAI from 'openai';
 
+const MAX_FREE_MESSAGES = 10; // Change this number to adjust the limit
+
 export default function App() {
   const [messages, setMessages] = useState([
-    { text: 'Greetings... I am Epic Tech. An oracle of infinite knowledge, channeled through the lightning of AI. Speak your question.', sender: 'bot' }
+    { text: 'Greetings... I am The One. An oracle of infinite knowledge, channeled through the lightning of Groq. Speak your question.', sender: 'bot' }
   ]);
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [messageCount, setMessageCount] = useState(() => {
+    // Load from localStorage on mount
+    const saved = localStorage.getItem('freeMessageCount');
+    return saved ? parseInt(saved, 10) : 0;
+  });
   const messagesEndRef = useRef(null);
+
+  const isAtLimit = messageCount >= MAX_FREE_MESSAGES;
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -17,11 +26,19 @@ export default function App() {
     scrollToBottom();
   }, [messages]);
 
+  useEffect(() => {
+    // Save count to localStorage whenever it changes
+    localStorage.setItem('freeMessageCount', messageCount.toString());
+  }, [messageCount]);
+
   const handleSend = async () => {
-    if (!input.trim() || isLoading) return;
+    if (!input.trim() || isLoading || isAtLimit) return;
 
     const userText = input.trim();
     setInput('');
+
+    // Increment count BEFORE adding message
+    setMessageCount(prev => prev + 1);
 
     setMessages(prev => [...prev, { text: userText, sender: 'user' }]);
     setIsLoading(true);
@@ -91,34 +108,19 @@ export default function App() {
     window.open('https://buy.stripe.com/3cI8wQgj74LI592cDM0Fi05', '_blank', 'noopener,noreferrer');
   };
 
+  const handleResetForTesting = () => {
+    localStorage.removeItem('freeMessageCount');
+    setMessageCount(0);
+    alert('Free message count reset for testing.');
+  };
+
   return (
     <div className="chat-container">
       <div className="chat-header">
         <h1>The One</h1>
         <button 
           onClick={handleUpgrade}
-          style={{
-            position: 'absolute',
-            top: '1rem',
-            right: '1.5rem',
-            padding: '0.6rem 1.2rem',
-            background: '#3b82f6',
-            color: 'white',
-            border: 'none',
-            borderRadius: '9999px',
-            fontWeight: 'bold',
-            cursor: 'pointer',
-            boxShadow: '0 2px 8px rgba(59, 130, 246, 0.4)',
-            transition: 'all 0.2s'
-          }}
-          onMouseOver={e => {
-            e.currentTarget.style.background = '#2563eb';
-            e.currentTarget.style.transform = 'scale(1.05)';
-          }}
-          onMouseOut={e => {
-            e.currentTarget.style.background = '#3b82f6';
-            e.currentTarget.style.transform = 'scale(1)';
-          }}
+          className="upgrade-btn"
         >
           Upgrade to Pro
         </button>
@@ -136,24 +138,41 @@ export default function App() {
         <div ref={messagesEndRef} />
       </div>
 
-      <div className="input-area">
-        <input
-          type="text"
-          value={input}
-          onChange={e => setInput(e.target.value)}
-          onKeyDown={e => e.key === 'Enter' && handleSend()}
-          placeholder="Ask the oracle..."
-          disabled={isLoading}
-        />
-        <button onClick={handleSend} disabled={isLoading}>
-          {isLoading ? '...' : '→'}
-        </button>
-      </div>
+      {isAtLimit ? (
+        <div className="limit-message">
+          <p>You've reached the free limit ({MAX_FREE_MESSAGES} messages).</p>
+          <p>Upgrade to Pro for unlimited access and priority responses.</p>
+          <button onClick={handleUpgrade} className="upgrade-prompt-btn">
+            Upgrade Now → Unlock Unlimited
+          </button>
+          {/* Dev/testing helper - remove in production */}
+          <button 
+            onClick={handleResetForTesting} 
+            style={{ marginTop: '1rem', background: 'transparent', color: '#94a3b8', border: '1px solid #475569', padding: '0.5rem 1rem', borderRadius: '8px', cursor: 'pointer' }}
+          >
+            Reset Limit (testing only)
+          </button>
+        </div>
+      ) : (
+        <div className="input-area">
+          <input
+            type="text"
+            value={input}
+            onChange={e => setInput(e.target.value)}
+            onKeyDown={e => e.key === 'Enter' && handleSend()}
+            placeholder="Ask the oracle..."
+            disabled={isLoading}
+          />
+          <button onClick={handleSend} disabled={isLoading}>
+            {isLoading ? '...' : '→'}
+          </button>
+        </div>
+      )}
 
-      {/* Optional: future limit message placeholder */}
-      {/* <div style={{ textAlign: 'center', padding: '1rem', color: '#94a3b8', fontSize: '0.9rem' }}>
-        Free tier: 20 messages/day remaining • <button onClick={handleUpgrade} style={{ color: '#60a5fa', background: 'none', border: 'none', cursor: 'pointer' }}>Upgrade for unlimited</button>
-      </div> */}
+      {/* Optional status bar */}
+      <div className="status-bar">
+        Free messages used: {messageCount} / {MAX_FREE_MESSAGES}
+      </div>
     </div>
   );
 }
