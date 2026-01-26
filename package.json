@@ -1,0 +1,15 @@
+{
+  "name": "chatbot-mobile-app",
+  "version": "1.0.0",
+  "dependencies": {
+    "react-native": "^0.68.3",
+    "react-native-gesture-handler": "^1.6.0",
+    "react-native-screens": "^2.10.1"
+  },
+  "scripts": {
+    "start": "react-native start",
+    "android": "javadoc android",
+    "ios": "javadoc ios",
+    "test": "jest"
+  }
+}
