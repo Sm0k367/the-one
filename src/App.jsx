@@ -3,7 +3,7 @@ import OpenAI from 'openai';
 
 export default function App() {
   const [messages, setMessages] = useState([
-    { text: 'Greetings... I am The One. An oracle of infinite knowledge, channeled through the lightning of Groq. Speak your question.', sender: 'bot' }
+    { text: 'Greetings... I am Epic Tech. An oracle of infinite knowledge, channeled through the lightning of AI. Speak your question.', sender: 'bot' }
   ]);
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -72,7 +72,6 @@ export default function App() {
         });
       }
 
-      // Ensure final message is set even if stream ends abruptly
       if (botResponse.trim() === '') {
         botResponse = '(The vision fades into silence...)';
       }
@@ -88,10 +87,41 @@ export default function App() {
     }
   };
 
+  const handleUpgrade = () => {
+    window.open('https://buy.stripe.com/3cI8wQgj74LI592cDM0Fi05', '_blank', 'noopener,noreferrer');
+  };
+
   return (
     <div className="chat-container">
       <div className="chat-header">
         <h1>The One</h1>
+        <button 
+          onClick={handleUpgrade}
+          style={{
+            position: 'absolute',
+            top: '1rem',
+            right: '1.5rem',
+            padding: '0.6rem 1.2rem',
+            background: '#3b82f6',
+            color: 'white',
+            border: 'none',
+            borderRadius: '9999px',
+            fontWeight: 'bold',
+            cursor: 'pointer',
+            boxShadow: '0 2px 8px rgba(59, 130, 246, 0.4)',
+            transition: 'all 0.2s'
+          }}
+          onMouseOver={e => {
+            e.currentTarget.style.background = '#2563eb';
+            e.currentTarget.style.transform = 'scale(1.05)';
+          }}
+          onMouseOut={e => {
+            e.currentTarget.style.background = '#3b82f6';
+            e.currentTarget.style.transform = 'scale(1)';
+          }}
+        >
+          Upgrade to Pro
+        </button>
       </div>
 
       <div className="messages">
@@ -119,6 +149,11 @@ export default function App() {
           {isLoading ? '...' : '→'}
         </button>
       </div>
+
+      {/* Optional: future limit message placeholder */}
+      {/* <div style={{ textAlign: 'center', padding: '1rem', color: '#94a3b8', fontSize: '0.9rem' }}>
+        Free tier: 20 messages/day remaining • <button onClick={handleUpgrade} style={{ color: '#60a5fa', background: 'none', border: 'none', cursor: 'pointer' }}>Upgrade for unlimited</button>
+      </div> */}
     </div>
   );
 }
