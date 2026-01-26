@@ -105,12 +105,14 @@ export default function App() {
 
   return (
     <div className="chat-container">
-      <div className="chat-header">
+      <header className="chat-header">
         <h1>Epic Tech AI</h1>
-        <button onClick={handleUpgrade} className="upgrade-btn">
-          Go Pro – Unlock ∞
-        </button>
-      </div>
+        <div className="header-actions">
+          <button onClick={handleUpgrade} className="upgrade-btn">
+            Go Pro – Unlock ∞
+          </button>
+        </div>
+      </header>
 
       <div className="messages">
         {messages.map((msg, i) => (
