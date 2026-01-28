@@ -2,68 +2,106 @@ import { useState, useRef, useEffect } from 'react'
 import Groq from 'groq-sdk'
 import { useAuth } from './AuthContext'
 import AuthModal from './AuthModal'
-import MediaGenModal from './MediaGenModal'
 import { saveChatHistory, loadChatHistory, deleteChatHistory } from './chatService'
 
 export default function App() {
   const { user, loading: authLoading, signOut } = useAuth()
-  const [theme, setTheme] = useState(() => localStorage.getItem('theme') || 'dark')
+  // Theme state
+  const [theme, setTheme] = useState(() => {
+    return localStorage.getItem('theme') || 'dark'
+  })
+
+  // Chat state
   const [messages, setMessages] = useState(() => {
     const saved = localStorage.getItem('chatHistory')
     return saved ? JSON.parse(saved) : [
-      { text: '🎯 Epic Tech AI is online! Fueled by cannabis & caffeine ☕🌿', sender: 'bot', timestamp: Date.now() }
+      { text: '💯 Epic Tech AI is online! Fueled by cannabis & caffeine ☕🌿', sender: 'bot', timestamp: Date.now() }
     ]
   })
   const [input, setInput] = useState('')
   const [isLoading, setIsLoading] = useState(false)
   const messagesEndRef = useRef(null)
+
+  // Voice state
   const [isListening, setIsListening] = useState(false)
   const [isSpeaking, setIsSpeaking] = useState(false)
   const recognitionRef = useRef(null)
   const synthRef = useRef(window.speechSynthesis)
-  const [showMediaGen, setShowMediaGen] = useState(false)
+
+  // Image generation state
+  const [showImageGen, setShowImageGen] = useState(false)
+  const [imagePrompt, setImagePrompt] = useState('')
+  const [isGeneratingImage, setIsGeneratingImage] = useState(false)
+
+  // History sidebar state
   const [showHistory, setShowHistory] = useState(false)
+
+  // Auth modal state
   const [showAuthModal, setShowAuthModal] = useState(false)
   const [showUserMenu, setShowUserMenu] = useState(false)
 
+  // Load chat history from database when user logs in
   useEffect(() => {
     if (user) {
       loadChatHistory(user.id).then(dbMessages => {
-        if (dbMessages && dbMessages.length > 0) setMessages(dbMessages)
+        if (dbMessages && dbMessages.length > 0) {
+          setMessages(dbMessages)
+        }
       })
     }
   }, [user])
 
+  // Save messages to localStorage and database whenever they change
   useEffect(() => {
     localStorage.setItem('chatHistory', JSON.stringify(messages))
-    if (user) saveChatHistory(user.id, messages)
+    
+    // Save to database if user is logged in
+    if (user) {
+      saveChatHistory(user.id, messages)
+    }
   }, [messages, user])
 
+  // Save theme to localStorage
   useEffect(() => {
     localStorage.setItem('theme', theme)
   }, [theme])
 
+  // Initialize speech recognition
   useEffect(() => {
     if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
       const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition
       recognitionRef.current = new SpeechRecognition()
       recognitionRef.current.continuous = false
       recognitionRef.current.interimResults = false
+      
       recognitionRef.current.onresult = (event) => {
-        setInput(event.results[0][0].transcript)
+        const transcript = event.results[0][0].transcript
+        setInput(transcript)
         setIsListening(false)
       }
-      recognitionRef.current.onerror = () => setIsListening(false)
-      recognitionRef.current.onend = () => setIsListening(false)
+      
+      recognitionRef.current.onerror = () => {
+        setIsListening(false)
+      }
+      
+      recognitionRef.current.onend = () => {
+        setIsListening(false)
+      }
     }
   }, [])
 
-  useEffect(() => {
+  const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
+  }
+
+  useEffect(() => {
+    scrollToBottom()
   }, [messages])
 
-  const toggleTheme = () => setTheme(prev => prev === 'dark' ? 'light' : 'dark')
-  
+  const toggleTheme = () => {
+    setTheme(prev => prev === 'dark' ? 'light' : 'dark')
+  }
+
   const toggleVoiceInput = () => {
     if (isListening) {
       recognitionRef.current?.stop()
@@ -80,6 +118,7 @@ export default function App() {
       setIsSpeaking(false)
       return
     }
+
     const utterance = new SpeechSynthesisUtterance(text)
     utterance.rate = 1.0
     utterance.pitch = 1.0
@@ -88,13 +127,11 @@ export default function App() {
     setIsSpeaking(true)
   }
 
-  const clearHistory = async () => {
+  const clearHistory = () => {
     if (confirm('Clear all chat history?')) {
-      const defaultMsg = [
-        { text: '🎯 Epic Tech AI is online! Fueled by cannabis & caffeine ☕🌿', sender: 'bot', timestamp: Date.now() }
-      ]
-      setMessages(defaultMsg)
-      if (user) await deleteChatHistory(user.id)
+      setMessages([
+        { text: '💯 Epic Tech AI is online! Fueled by cannabis & caffeine ☕🌿', sender: 'bot', timestamp: Date.now() }
+      ])
     }
   }
 
@@ -106,25 +143,6 @@ export default function App() {
     a.href = url
     a.download = `epic-tech-ai-chat-${Date.now()}.txt`
     a.click()
-  }
-
-  const handleMediaGenerated = (media) => {
-    let messageText = ''
-    let messageData = { sender: 'bot', timestamp: Date.now() }
-
-    if (media.type === 'image') {
-      messageText = `🎨 Generated image for: "${media.prompt}"`
-      messageData.image = media.url
-    } else if (media.type === 'video') {
-      messageText = `🎬 Generated video for: "${media.prompt}"`
-      messageData.video = media.url
-    } else if (media.type === 'music') {
-      messageText = `🎵 Generated music for: "${media.prompt}"${media.isDemo ? ' (demo track)' : ''}`
-      messageData.audio = media.url
-    }
-
-    messageData.text = messageText
-    setMessages(prev => [...prev, messageData])
   }
 
   const handleSend = async () => {
@@ -151,7 +169,10 @@ export default function App() {
             role: msg.sender === 'user' ? 'user' : 'assistant',
             content: msg.text
           })),
-          { role: 'user', content: input }
+          {
+            role: 'user',
+            content: input
+          }
         ],
         model: 'llama-3.3-70b-versatile',
         temperature: 0.7,
@@ -161,6 +182,7 @@ export default function App() {
       })
 
       const botResponse = completion.choices[0]?.message?.content || 'Sorry, I had trouble processing that.'
+      
       setMessages(prev => [...prev, { text: botResponse, sender: 'bot', timestamp: Date.now() }])
     } catch (error) {
       console.error('Groq API Error:', error)
@@ -174,6 +196,37 @@ export default function App() {
     }
   }
 
+  const generateImage = async () => {
+    if (!imagePrompt.trim() || isGeneratingImage) return
+    
+    setIsGeneratingImage(true)
+    
+    try {
+      const response = await fetch(`https://image.pollinations.ai/prompt/${encodeURIComponent(imagePrompt)}?width=512&height=512&nologo=true`)
+      const imageUrl = response.url
+      
+      setMessages(prev => [...prev, {
+        text: `🎨 Generated image for: "${imagePrompt}"`,
+        sender: 'bot',
+        timestamp: Date.now(),
+        image: imageUrl
+      }])
+      
+      setImagePrompt('')
+      setShowImageGen(false)
+    } catch (error) {
+      console.error('Image generation error:', error)
+      setMessages(prev => [...prev, {
+        text: '⚠️ Image generation failed. Try again!',
+        sender: 'bot',
+        timestamp: Date.now()
+      }])
+    } finally {
+      setIsGeneratingImage(false)
+    }
+  }
+
+  // Enhanced theme colors with glassmorphism
   const colors = theme === 'dark' ? {
     bg: 'linear-gradient(135deg, #0a0015 0%, #1a0033 50%, #0f001a 100%)',
     text: '#e8f4f8',
@@ -213,7 +266,7 @@ export default function App() {
       position: 'relative',
       letterSpacing: '-0.01em'
     }}>
-      {/* Header */}
+      {/* Header with glassmorphism */}
       <div style={{
         textAlign: 'center',
         padding: '24px',
@@ -224,66 +277,6 @@ export default function App() {
         position: 'relative',
         backdropFilter: 'blur(10px)'
       }}>
-        {/* User profile button (top left) */}
-        {!authLoading && (
-          <div style={{ position: 'absolute', top: '16px', left: '16px' }}>
-            {user ? (
-              <div style={{ position: 'relative' }}>
-                <button onClick={() => setShowUserMenu(!showUserMenu)} style={{
-                  ...buttonStyle,
-                  minWidth: '48px',
-                  minHeight: '48px',
-                  borderRadius: '50%',
-                  background: 'linear-gradient(135deg, #00f0ff, #ff00aa)',
-                  color: '#000',
-                  fontWeight: '700',
-                  fontSize: '1.25rem'
-                }}>
-                  {user.email[0].toUpperCase()}
-                </button>
-                {showUserMenu && (
-                  <div style={{
-                    position: 'absolute',
-                    top: '56px',
-                    left: 0,
-                    background: colors.messageBg,
-                    border: `1px solid ${colors.border}`,
-                    borderRadius: '12px',
-                    padding: '12px',
-                    minWidth: '200px',
-                    backdropFilter: 'blur(20px)',
-                    boxShadow: `0 4px 16px ${colors.shadow}`,
-                    zIndex: 1001
-                  }}>
-                    <div style={{ padding: '8px', fontSize: '0.875rem', opacity: 0.8, borderBottom: `1px solid ${colors.border}`, marginBottom: '8px' }}>
-                      {user.email}
-                    </div>
-                    <button onClick={() => { signOut(); setShowUserMenu(false); }} style={{
-                      ...buttonStyle,
-                      width: '100%',
-                      background: 'rgba(255, 0, 0, 0.2)',
-                      border: '1px solid rgba(255, 0, 0, 0.3)'
-                    }}>
-                      Sign Out
-                    </button>
-                  </div>
-                )}
-              </div>
-            ) : (
-              <button onClick={() => setShowAuthModal(true)} style={{
-                ...buttonStyle,
-                minWidth: '100px',
-                minHeight: '48px',
-                background: 'linear-gradient(135deg, #00f0ff, #ff00aa)',
-                color: '#000',
-                fontWeight: '700'
-              }}>
-                Sign In
-              </button>
-            )}
-          </div>
-        )}
-
         <h1 style={{
           fontSize: '2.5rem',
           fontWeight: '900',
@@ -295,7 +288,7 @@ export default function App() {
           margin: 0,
           lineHeight: 1.2
         }}>
-          🎯 EPIC TECH AI 🔥
+          💯 EPIC TECH AI 🔥
         </h1>
         <p style={{ 
           margin: '8px 0 0 0', 
@@ -307,7 +300,7 @@ export default function App() {
           @Sm0ken42O • Fueled by Cannabis & Caffeine ☕🌿
         </p>
         
-        {/* Control buttons */}
+        {/* Control buttons with better touch targets */}
         <div style={{
           position: 'absolute',
           top: '16px',
@@ -335,7 +328,7 @@ export default function App() {
           }}>
             📜
           </button>
-          <button onClick={() => setShowMediaGen(!showMediaGen)} style={{
+          <button onClick={() => setShowImageGen(!showImageGen)} style={{
             ...buttonStyle,
             minWidth: '48px',
             minHeight: '48px',
@@ -348,7 +341,7 @@ export default function App() {
         </div>
       </div>
 
-      {/* History Sidebar */}
+      {/* History Sidebar with glassmorphism */}
       {showHistory && (
         <div style={{
           position: 'absolute',
@@ -383,16 +376,77 @@ export default function App() {
         </div>
       )}
 
-      {/* Media Generation Modal */}
-      {showMediaGen && (
-        <MediaGenModal 
-          colors={colors} 
-          onClose={() => setShowMediaGen(false)}
-          onMediaGenerated={handleMediaGenerated}
-        />
+      {/* Image Generation Modal with glassmorphism */}
+      {showImageGen && (
+        <div style={{
+          position: 'absolute',
+          top: '50%',
+          left: '50%',
+          transform: 'translate(-50%, -50%)',
+          width: '90%',
+          maxWidth: '500px',
+          background: colors.messageBg,
+          border: `1px solid ${colors.border}`,
+          borderRadius: '20px',
+          padding: '32px',
+          zIndex: 1000,
+          backdropFilter: 'blur(20px)',
+          boxShadow: `0 8px 32px ${colors.shadow}`
+        }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
+            <h3 style={{ margin: 0, fontWeight: '700', fontSize: '1.5rem' }}>🎨 Generate Image</h3>
+            <button onClick={() => setShowImageGen(false)} style={{
+              ...buttonStyle,
+              minWidth: '40px',
+              minHeight: '40px',
+              padding: '8px'
+            }}>✕</button>
+          </div>
+          <input
+            type="text"
+            value={imagePrompt}
+            onChange={e => setImagePrompt(e.target.value)}
+            onKeyDown={e => e.key === 'Enter' && generateImage()}
+            placeholder="Describe the image you want..."
+            style={{
+              width: '100%',
+              padding: '16px 20px',
+              borderRadius: '12px',
+              border: `2px solid ${colors.border}`,
+              background: colors.inputBg,
+              color: colors.text,
+              fontSize: '1rem',
+              marginBottom: '16px',
+              outline: 'none',
+              transition: 'all 0.3s ease',
+              fontWeight: '400'
+            }}
+          />
+          <button
+            onClick={generateImage}
+            disabled={isGeneratingImage || !imagePrompt.trim()}
+            style={{
+              width: '100%',
+              padding: '16px',
+              borderRadius: '12px',
+              background: isGeneratingImage || !imagePrompt.trim()
+                ? 'rgba(100, 100, 100, 0.5)'
+                : 'linear-gradient(135deg, #00f0ff, #ff00aa)',
+              color: isGeneratingImage || !imagePrompt.trim() ? '#666' : '#000',
+              border: 'none',
+              fontWeight: '700',
+              fontSize: '1rem',
+              cursor: isGeneratingImage || !imagePrompt.trim() ? 'not-allowed' : 'pointer',
+              transition: 'all 0.3s ease',
+              boxShadow: !isGeneratingImage && imagePrompt.trim() ? `0 4px 16px ${colors.shadow}` : 'none'
+            }}
+          >
+            {isGeneratingImage ? 'Generating...' : 'Generate Image'}
+          </button>
+        </div>
       )}
 
-      {/* Messages */}
+      {/* Messages with enhanced styling */}
       <div style={{
         flex: 1,
         overflowY: 'auto',
@@ -459,28 +513,6 @@ export default function App() {
                 }}
               />
             )}
-            {msg.video && (
-              <video
-                src={msg.video}
-                controls
-                style={{
-                  maxWidth: '75%',
-                  borderRadius: '16px',
-                  marginTop: '8px',
-                  boxShadow: `0 4px 16px ${colors.shadow}`
-                }}
-              />
-            )}
-            {msg.audio && (
-              <audio
-                src={msg.audio}
-                controls
-                style={{
-                  maxWidth: '75%',
-                  marginTop: '8px'
-                }}
-              />
-            )}
           </div>
         ))}
         
@@ -508,7 +540,7 @@ export default function App() {
         <div ref={messagesEndRef} />
       </div>
 
-      {/* Input Area */}
+      {/* Input Area with enhanced styling */}
       <div style={{ 
         display: 'flex', 
         gap: '8px',
@@ -588,6 +620,7 @@ export default function App() {
           50% { opacity: 0.7; transform: scale(0.98); }
         }
         
+        /* Scrollbar styling */
         ::-webkit-scrollbar {
           width: 8px;
         }
