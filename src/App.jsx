@@ -2,12 +2,7 @@ import { useState, useRef, useEffect } from 'react'
 import Groq from 'groq-sdk'
 
 export default function App() {
-  // Theme state
-  const [theme, setTheme] = useState(() => {
-    return localStorage.getItem('theme') || 'dark'
-  })
-
-  // Chat state
+  const [theme, setTheme] = useState(() => localStorage.getItem('theme') || 'dark')
   const [messages, setMessages] = useState(() => {
     const saved = localStorage.getItem('chatHistory')
     return saved ? JSON.parse(saved) : [
@@ -17,32 +12,18 @@ export default function App() {
   const [input, setInput] = useState('')
   const [isLoading, setIsLoading] = useState(false)
   const messagesEndRef = useRef(null)
-
-  // Voice state
   const [isListening, setIsListening] = useState(false)
-  const [isSpeaking, setIsSpeaking] = useState(false)
   const recognitionRef = useRef(null)
   const synthRef = useRef(window.speechSynthesis)
 
-  // Image generation state
-  const [showImageGen, setShowImageGen] = useState(false)
-  const [imagePrompt, setImagePrompt] = useState('')
-  const [isGeneratingImage, setIsGeneratingImage] = useState(false)
-
-  // History sidebar state
-  const [showHistory, setShowHistory] = useState(false)
-
-  // Save messages to localStorage whenever they change
   useEffect(() => {
     localStorage.setItem('chatHistory', JSON.stringify(messages))
   }, [messages])
 
-  // Save theme to localStorage
   useEffect(() => {
     localStorage.setItem('theme', theme)
   }, [theme])
 
-  // Initialize speech recognition
   useEffect(() => {
     if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
       const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition
@@ -56,13 +37,8 @@ export default function App() {
         setIsListening(false)
       }
       
-      recognitionRef.current.onerror = () => {
-        setIsListening(false)
-      }
-      
-      recognitionRef.current.onend = () => {
-        setIsListening(false)
-      }
+      recognitionRef.current.onerror = () => setIsListening(false)
+      recognitionRef.current.onend = () => setIsListening(false)
     }
   }, [])
 
@@ -89,18 +65,14 @@ export default function App() {
   }
 
   const speakText = (text) => {
-    if (isSpeaking) {
-      synthRef.current.cancel()
-      setIsSpeaking(false)
+    if (window.speechSynthesis.speaking) {
+      window.speechSynthesis.cancel()
       return
     }
-
     const utterance = new SpeechSynthesisUtterance(text)
     utterance.rate = 1.0
     utterance.pitch = 1.0
-    utterance.onend = () => setIsSpeaking(false)
-    synthRef.current.speak(utterance)
-    setIsSpeaking(true)
+    window.speechSynthesis.speak(utterance)
   }
 
   const clearHistory = () => {
@@ -109,16 +81,6 @@ export default function App() {
         { text: '🧠 Epic Tech AI is online! Fueled by cannabis & caffeine ☕🌿', sender: 'bot', timestamp: Date.now() }
       ])
     }
-  }
-
-  const exportChat = () => {
-    const chatText = messages.map(m => `[${m.sender}]: ${m.text}`).join('\n\n')
-    const blob = new Blob([chatText], { type: 'text/plain' })
-    const url = URL.createObjectURL(blob)
-    const a = document.createElement('a')
-    a.href = url
-    a.download = `epic-tech-ai-chat-${Date.now()}.txt`
-    a.click()
   }
 
   const handleSend = async () => {
@@ -133,7 +95,7 @@ export default function App() {
       const apiKey = import.meta.env.VITE_GROQ_API_KEY
       
       if (!apiKey) {
-        throw new Error('VITE_GROQ_API_KEY is not set. Please add it to your .env file.')
+        throw new Error('VITE_GROQ_API_KEY is not set')
       }
 
       const groq = new Groq({
@@ -145,7 +107,7 @@ export default function App() {
         messages: [
           {
             role: 'system',
-            content: 'You are Epic Tech AI, a creative multimedia artist who makes music, videos, and AI art. You are fueled by cannabis and caffeine. You are friendly, creative, and enthusiastic about technology, AI, music production (especially DJ Smoke Stream), and digital art. Keep responses conversational and engaging.'
+            content: 'You are Epic Tech AI, a creative multimedia artist who makes music, videos, and AI art. You are fueled by cannabis and caffeine. You are friendly, creative, and enthusiastic about technology, AI, music production, and digital art. Keep responses conversational and engaging. You are @Sm0k367 on social media.'
           },
           ...messages.map(msg => ({
             role: msg.sender === 'user' ? 'user' : 'assistant',
@@ -164,7 +126,6 @@ export default function App() {
       })
 
       const botResponse = completion.choices[0]?.message?.content || 'Sorry, I had trouble processing that.'
-      
       setMessages(prev => [...prev, { text: botResponse, sender: 'bot', timestamp: Date.now() }])
     } catch (error) {
       console.error('Groq API Error:', error)
@@ -178,37 +139,6 @@ export default function App() {
     }
   }
 
-  const generateImage = async () => {
-    if (!imagePrompt.trim() || isGeneratingImage) return
-    
-    setIsGeneratingImage(true)
-    
-    try {
-      const response = await fetch(`https://image.pollinations.ai/prompt/${encodeURIComponent(imagePrompt)}?width=512&height=512&nologo=true`)
-      const imageUrl = response.url
-      
-      setMessages(prev => [...prev, {
-        text: `🎨 Generated image for: "${imagePrompt}"`,
-        sender: 'bot',
-        timestamp: Date.now(),
-        image: imageUrl
-      }])
-      
-      setImagePrompt('')
-      setShowImageGen(false)
-    } catch (error) {
-      console.error('Image generation error:', error)
-      setMessages(prev => [...prev, {
-        text: '⚠️ Image generation failed. Try again!',
-        sender: 'bot',
-        timestamp: Date.now()
-      }])
-    } finally {
-      setIsGeneratingImage(false)
-    }
-  }
-
-  // Enhanced theme colors with glassmorphism
   const colors = theme === 'dark' ? {
     bg: 'linear-gradient(135deg, #0a0015 0%, #1a0033 50%, #0f001a 100%)',
     text: '#e8f4f8',
@@ -219,7 +149,6 @@ export default function App() {
     botBubble: 'rgba(0, 240, 255, 0.08)',
     inputBg: 'rgba(10, 0, 21, 0.6)',
     border: 'rgba(0, 240, 255, 0.25)',
-    glass: 'rgba(255, 255, 255, 0.05)',
     shadow: 'rgba(0, 240, 255, 0.15)'
   } : {
     bg: 'linear-gradient(135deg, #f0f4ff 0%, #e0e7ff 50%, #f5f3ff 100%)',
@@ -231,7 +160,6 @@ export default function App() {
     botBubble: 'rgba(0, 212, 255, 0.08)',
     inputBg: 'rgba(255, 255, 255, 0.8)',
     border: 'rgba(0, 212, 255, 0.3)',
-    glass: 'rgba(255, 255, 255, 0.6)',
     shadow: 'rgba(0, 0, 0, 0.1)'
   }
 
@@ -243,12 +171,10 @@ export default function App() {
       background: colors.bg,
       color: colors.text,
       fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif',
-      fontWeight: '400',
       padding: '16px',
-      position: 'relative',
-      letterSpacing: '-0.01em'
+      position: 'relative'
     }}>
-      {/* Header with glassmorphism */}
+      {/* Header */}
       <div style={{
         textAlign: 'center',
         padding: '24px',
@@ -276,13 +202,11 @@ export default function App() {
           margin: '8px 0 0 0', 
           fontSize: '0.9rem',
           color: colors.headerText,
-          fontWeight: '600',
-          letterSpacing: '0.5px'
+          fontWeight: '600'
         }}>
-          @Sm0ken42O • Fueled by Cannabis & Caffeine ☕🌿
+          @Sm0k367 • Fueled by Cannabis & Caffeine ☕🌿
         </p>
         
-        {/* Control buttons with better touch targets */}
         <div style={{
           position: 'absolute',
           top: '16px',
@@ -291,144 +215,35 @@ export default function App() {
           gap: '8px'
         }}>
           <button onClick={toggleTheme} style={{
-            ...buttonStyle,
-            minWidth: '48px',
-            minHeight: '48px',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center'
+            padding: '12px 16px',
+            borderRadius: '12px',
+            background: 'rgba(0, 240, 255, 0.15)',
+            border: '1px solid rgba(0, 240, 255, 0.3)',
+            color: 'inherit',
+            cursor: 'pointer',
+            fontSize: '1rem',
+            transition: 'all 0.3s ease',
+            fontWeight: '600'
           }}>
             {theme === 'dark' ? '☀️' : '🌙'}
           </button>
-          <button onClick={() => setShowHistory(!showHistory)} style={{
-            ...buttonStyle,
-            minWidth: '48px',
-            minHeight: '48px',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center'
+          <button onClick={clearHistory} style={{
+            padding: '12px 16px',
+            borderRadius: '12px',
+            background: 'rgba(0, 240, 255, 0.15)',
+            border: '1px solid rgba(0, 240, 255, 0.3)',
+            color: 'inherit',
+            cursor: 'pointer',
+            fontSize: '1rem',
+            transition: 'all 0.3s ease',
+            fontWeight: '600'
           }}>
-            📝
-          </button>
-          <button onClick={() => setShowImageGen(!showImageGen)} style={{
-            ...buttonStyle,
-            minWidth: '48px',
-            minHeight: '48px',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center'
-          }}>
-            🎨
+            🗑️
           </button>
         </div>
       </div>
 
-      {/* History Sidebar with glassmorphism */}
-      {showHistory && (
-        <div style={{
-          position: 'absolute',
-          top: '16px',
-          right: '16px',
-          width: '320px',
-          maxHeight: '80vh',
-          background: colors.messageBg,
-          border: `1px solid ${colors.border}`,
-          borderRadius: '16px',
-          padding: '24px',
-          zIndex: 1000,
-          backdropFilter: 'blur(20px)',
-          boxShadow: `0 8px 32px ${colors.shadow}`
-        }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
-            <h3 style={{ margin: 0, fontWeight: '700', fontSize: '1.25rem' }}>Chat History</h3>
-            <button onClick={() => setShowHistory(false)} style={{
-              ...buttonStyle,
-              minWidth: '40px',
-              minHeight: '40px',
-              padding: '8px'
-            }}>✕</button>
-          </div>
-          <div style={{ display: 'flex', gap: '8px', marginBottom: '16px' }}>
-            <button onClick={clearHistory} style={{...buttonStyle, flex: 1, fontWeight: '600'}}>Clear</button>
-            <button onClick={exportChat} style={{...buttonStyle, flex: 1, fontWeight: '600'}}>Export</button>
-          </div>
-          <div style={{ fontSize: '0.875rem', opacity: 0.8, fontWeight: '500' }}>
-            {messages.length} messages
-          </div>
-        </div>
-      )}
-
-      {/* Image Generation Modal with glassmorphism */}
-      {showImageGen && (
-        <div style={{
-          position: 'absolute',
-          top: '50%',
-          left: '50%',
-          transform: 'translate(-50%, -50%)',
-          width: '90%',
-          maxWidth: '500px',
-          background: colors.messageBg,
-          border: `1px solid ${colors.border}`,
-          borderRadius: '20px',
-          padding: '32px',
-          zIndex: 1000,
-          backdropFilter: 'blur(20px)',
-          boxShadow: `0 8px 32px ${colors.shadow}`
-        }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
-            <h3 style={{ margin: 0, fontWeight: '700', fontSize: '1.5rem' }}>🎨 Generate Image</h3>
-            <button onClick={() => setShowImageGen(false)} style={{
-              ...buttonStyle,
-              minWidth: '40px',
-              minHeight: '40px',
-              padding: '8px'
-            }}>✕</button>
-          </div>
-          <input
-            type="text"
-            value={imagePrompt}
-            onChange={e => setImagePrompt(e.target.value)}
-            onKeyDown={e => e.key === 'Enter' && generateImage()}
-            placeholder="Describe the image you want..."
-            style={{
-              width: '100%',
-              padding: '16px 20px',
-              borderRadius: '12px',
-              border: `2px solid ${colors.border}`,
-              background: colors.inputBg,
-              color: colors.text,
-              fontSize: '1rem',
-              marginBottom: '16px',
-              outline: 'none',
-              transition: 'all 0.3s ease',
-              fontWeight: '400'
-            }}
-          />
-          <button
-            onClick={generateImage}
-            disabled={isGeneratingImage || !imagePrompt.trim()}
-            style={{
-              width: '100%',
-              padding: '16px',
-              borderRadius: '12px',
-              background: isGeneratingImage || !imagePrompt.trim()
-                ? 'rgba(100, 100, 100, 0.5)'
-                : 'linear-gradient(135deg, #00f0ff, #ff00aa)',
-              color: isGeneratingImage || !imagePrompt.trim() ? '#666' : '#000',
-              border: 'none',
-              fontWeight: '700',
-              fontSize: '1rem',
-              cursor: isGeneratingImage || !imagePrompt.trim() ? 'not-allowed' : 'pointer',
-              transition: 'all 0.3s ease',
-              boxShadow: !isGeneratingImage && imagePrompt.trim() ? `0 4px 16px ${colors.shadow}` : 'none'
-            }}
-          >
-            {isGeneratingImage ? 'Generating...' : 'Generate Image'}
-          </button>
-        </div>
-      )}
-
-      {/* Messages with enhanced styling */}
+      {/* Messages */}
       <div style={{
         flex: 1,
         overflowY: 'auto',
@@ -469,32 +284,23 @@ export default function App() {
                 <button
                   onClick={() => speakText(msg.text)}
                   style={{
-                    ...buttonStyle,
                     position: 'absolute',
                     bottom: '8px',
                     right: '8px',
+                    padding: '6px',
+                    borderRadius: '8px',
+                    background: 'rgba(0, 240, 255, 0.2)',
+                    border: 'none',
+                    color: 'inherit',
+                    cursor: 'pointer',
                     fontSize: '0.875rem',
-                    minWidth: '32px',
-                    minHeight: '32px',
-                    padding: '6px'
+                    transition: 'all 0.3s ease'
                   }}
                 >
-                  {isSpeaking ? '🔇' : '🔊'}
+                  🔊
                 </button>
               )}
             </div>
-            {msg.image && (
-              <img
-                src={msg.image}
-                alt="Generated"
-                style={{
-                  maxWidth: '75%',
-                  borderRadius: '16px',
-                  marginTop: '8px',
-                  boxShadow: `0 4px 16px ${colors.shadow}`
-                }}
-              />
-            )}
           </div>
         ))}
         
@@ -522,7 +328,7 @@ export default function App() {
         <div ref={messagesEndRef} />
       </div>
 
-      {/* Input Area with enhanced styling */}
+      {/* Input Area */}
       <div style={{ 
         display: 'flex', 
         gap: '8px',
@@ -536,11 +342,18 @@ export default function App() {
         <button
           onClick={toggleVoiceInput}
           style={{
-            ...buttonStyle,
+            padding: '12px 16px',
+            borderRadius: '12px',
+            background: isListening ? 'linear-gradient(135deg, #ff0080, #ff00aa)' : 'rgba(0, 240, 255, 0.15)',
+            border: '1px solid rgba(0, 240, 255, 0.3)',
+            color: 'inherit',
+            cursor: 'pointer',
+            fontSize: '1rem',
+            transition: 'all 0.3s ease',
+            fontWeight: '600',
+            animation: isListening ? 'pulse 1s ease-in-out infinite' : 'none',
             minWidth: '48px',
             minHeight: '48px',
-            background: isListening ? 'linear-gradient(135deg, #ff0080, #ff00aa)' : colors.inputBg,
-            animation: isListening ? 'pulse 1s ease-in-out infinite' : 'none',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center'
@@ -597,13 +410,12 @@ export default function App() {
           50% { opacity: 0.7; transform: scale(0.98); }
         }
         
-        /* Scrollbar styling */
         ::-webkit-scrollbar {
           width: 8px;
         }
         
         ::-webkit-scrollbar-track {
-          background: ${colors.glass};
+          background: rgba(255, 255, 255, 0.05);
           border-radius: 4px;
         }
         
@@ -619,17 +431,3 @@ export default function App() {
     </div>
   )
 }
-
-const buttonStyle = {
-  padding: '12px 16px',
-  borderRadius: '12px',
-  background: 'rgba(0, 240, 255, 0.15)',
-  border: '1px solid rgba(0, 240, 255, 0.3)',
-  color: 'inherit',
-  cursor: 'pointer',
-  fontSize: '1rem',
-  transition: 'all 0.3s ease',
-  fontWeight: '600',
-  backdropFilter: 'blur(10px)'
-}
-// Cache bust: 1769585625
