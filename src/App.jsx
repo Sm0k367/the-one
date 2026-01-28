@@ -1,7 +1,11 @@
 import { useState, useRef, useEffect } from 'react'
 import Groq from 'groq-sdk'
+import { useAuth } from './AuthContext'
+import AuthModal from './AuthModal'
+import { saveChatHistory, loadChatHistory, deleteChatHistory } from './chatService'
 
 export default function App() {
+  const { user, loading: authLoading, signOut } = useAuth()
   // Theme state
   const [theme, setTheme] = useState(() => {
     return localStorage.getItem('theme') || 'dark'
@@ -32,10 +36,30 @@ export default function App() {
   // History sidebar state
   const [showHistory, setShowHistory] = useState(false)
 
-  // Save messages to localStorage whenever they change
+  // Auth modal state
+  const [showAuthModal, setShowAuthModal] = useState(false)
+  const [showUserMenu, setShowUserMenu] = useState(false)
+
+  // Load chat history from database when user logs in
+  useEffect(() => {
+    if (user) {
+      loadChatHistory(user.id).then(dbMessages => {
+        if (dbMessages && dbMessages.length > 0) {
+          setMessages(dbMessages)
+        }
+      })
+    }
+  }, [user])
+
+  // Save messages to localStorage and database whenever they change
   useEffect(() => {
     localStorage.setItem('chatHistory', JSON.stringify(messages))
-  }, [messages])
+    
+    // Save to database if user is logged in
+    if (user) {
+      saveChatHistory(user.id, messages)
+    }
+  }, [messages, user])
 
   // Save theme to localStorage
   useEffect(() => {
@@ -584,6 +608,11 @@ export default function App() {
           {isLoading ? '...' : 'Send'}
         </button>
       </div>
+
+      {/* Auth Modal */}
+      {showAuthModal && (
+        <AuthModal colors={colors} onClose={() => setShowAuthModal(false)} />
+      )}
 
       <style>{`
         @keyframes pulse {
