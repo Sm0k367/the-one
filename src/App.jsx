@@ -202,27 +202,31 @@ export default function App() {
     }
   }
 
-  // Theme colors
+  // Enhanced theme colors with glassmorphism
   const colors = theme === 'dark' ? {
-    bg: 'linear-gradient(135deg, #0a0015 0%, #1a0033 100%)',
-    text: '#e0f7ff',
-    headerBg: 'linear-gradient(90deg, #00f0ff 0%, #ff00aa 100%)',
+    bg: 'linear-gradient(135deg, #0a0015 0%, #1a0033 50%, #0f001a 100%)',
+    text: '#e8f4f8',
+    headerBg: 'linear-gradient(135deg, #00f0ff 0%, #a855f7 50%, #ff00aa 100%)',
     headerText: '#000',
-    messageBg: 'rgba(26, 0, 51, 0.5)',
-    userBubble: 'linear-gradient(135deg, #00f0ff, #00c0ff)',
-    botBubble: 'rgba(0, 240, 255, 0.15)',
-    inputBg: 'rgba(10, 0, 21, 0.7)',
-    border: 'rgba(0, 240, 255, 0.2)'
+    messageBg: 'rgba(26, 0, 51, 0.4)',
+    userBubble: 'linear-gradient(135deg, #00f0ff 0%, #00d4ff 100%)',
+    botBubble: 'rgba(0, 240, 255, 0.08)',
+    inputBg: 'rgba(10, 0, 21, 0.6)',
+    border: 'rgba(0, 240, 255, 0.25)',
+    glass: 'rgba(255, 255, 255, 0.05)',
+    shadow: 'rgba(0, 240, 255, 0.15)'
   } : {
-    bg: 'linear-gradient(135deg, #f0f4ff 0%, #e0e7ff 100%)',
-    text: '#1a1a2e',
-    headerBg: 'linear-gradient(90deg, #00d4ff 0%, #ff0080 100%)',
+    bg: 'linear-gradient(135deg, #f0f4ff 0%, #e0e7ff 50%, #f5f3ff 100%)',
+    text: '#1e293b',
+    headerBg: 'linear-gradient(135deg, #00d4ff 0%, #a855f7 50%, #ff0080 100%)',
     headerText: '#fff',
-    messageBg: 'rgba(255, 255, 255, 0.8)',
-    userBubble: 'linear-gradient(135deg, #00d4ff, #0099ff)',
-    botBubble: 'rgba(0, 212, 255, 0.1)',
-    inputBg: 'rgba(255, 255, 255, 0.9)',
-    border: 'rgba(0, 212, 255, 0.3)'
+    messageBg: 'rgba(255, 255, 255, 0.7)',
+    userBubble: 'linear-gradient(135deg, #00d4ff 0%, #0099ff 100%)',
+    botBubble: 'rgba(0, 212, 255, 0.08)',
+    inputBg: 'rgba(255, 255, 255, 0.8)',
+    border: 'rgba(0, 212, 255, 0.3)',
+    glass: 'rgba(255, 255, 255, 0.6)',
+    shadow: 'rgba(0, 0, 0, 0.1)'
   }
 
   return (
@@ -232,19 +236,22 @@ export default function App() {
       flexDirection: 'column',
       background: colors.bg,
       color: colors.text,
-      fontFamily: 'system-ui, -apple-system, sans-serif',
-      padding: '1rem',
-      position: 'relative'
+      fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif',
+      fontWeight: '400',
+      padding: '16px',
+      position: 'relative',
+      letterSpacing: '-0.01em'
     }}>
-      {/* Header */}
+      {/* Header with glassmorphism */}
       <div style={{
         textAlign: 'center',
-        padding: '1.5rem',
+        padding: '24px',
         background: colors.headerBg,
-        borderRadius: '12px',
-        marginBottom: '1rem',
-        boxShadow: '0 0 30px rgba(0, 240, 255, 0.3)',
-        position: 'relative'
+        borderRadius: '16px',
+        marginBottom: '16px',
+        boxShadow: `0 8px 32px ${colors.shadow}`,
+        position: 'relative',
+        backdropFilter: 'blur(10px)'
       }}>
         <h1 style={{
           fontSize: '2.5rem',
@@ -254,69 +261,98 @@ export default function App() {
           WebkitBackgroundClip: 'text',
           backgroundClip: 'text',
           WebkitTextFillColor: 'transparent',
-          margin: 0
+          margin: 0,
+          lineHeight: 1.2
         }}>
           💯 EPIC TECH AI 🔥
         </h1>
         <p style={{ 
-          margin: '0.5rem 0 0 0', 
+          margin: '8px 0 0 0', 
           fontSize: '0.9rem',
           color: colors.headerText,
-          fontWeight: '600'
+          fontWeight: '600',
+          letterSpacing: '0.5px'
         }}>
           @Sm0ken42O • Fueled by Cannabis & Caffeine ☕🌿
         </p>
         
-        {/* Control buttons */}
+        {/* Control buttons with better touch targets */}
         <div style={{
           position: 'absolute',
-          top: '1rem',
-          right: '1rem',
+          top: '16px',
+          right: '16px',
           display: 'flex',
-          gap: '0.5rem'
+          gap: '8px'
         }}>
-          <button onClick={toggleTheme} style={buttonStyle}>
+          <button onClick={toggleTheme} style={{
+            ...buttonStyle,
+            minWidth: '48px',
+            minHeight: '48px',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center'
+          }}>
             {theme === 'dark' ? '☀️' : '🌙'}
           </button>
-          <button onClick={() => setShowHistory(!showHistory)} style={buttonStyle}>
+          <button onClick={() => setShowHistory(!showHistory)} style={{
+            ...buttonStyle,
+            minWidth: '48px',
+            minHeight: '48px',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center'
+          }}>
             📜
           </button>
-          <button onClick={() => setShowImageGen(!showImageGen)} style={buttonStyle}>
+          <button onClick={() => setShowImageGen(!showImageGen)} style={{
+            ...buttonStyle,
+            minWidth: '48px',
+            minHeight: '48px',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center'
+          }}>
             🎨
           </button>
         </div>
       </div>
 
-      {/* History Sidebar */}
+      {/* History Sidebar with glassmorphism */}
       {showHistory && (
         <div style={{
           position: 'absolute',
-          top: '1rem',
-          right: '1rem',
-          width: '300px',
+          top: '16px',
+          right: '16px',
+          width: '320px',
           maxHeight: '80vh',
           background: colors.messageBg,
           border: `1px solid ${colors.border}`,
-          borderRadius: '12px',
-          padding: '1rem',
+          borderRadius: '16px',
+          padding: '24px',
           zIndex: 1000,
-          backdropFilter: 'blur(10px)'
+          backdropFilter: 'blur(20px)',
+          boxShadow: `0 8px 32px ${colors.shadow}`
         }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '1rem' }}>
-            <h3 style={{ margin: 0 }}>Chat History</h3>
-            <button onClick={() => setShowHistory(false)} style={buttonStyle}>✕</button>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
+            <h3 style={{ margin: 0, fontWeight: '700', fontSize: '1.25rem' }}>Chat History</h3>
+            <button onClick={() => setShowHistory(false)} style={{
+              ...buttonStyle,
+              minWidth: '40px',
+              minHeight: '40px',
+              padding: '8px'
+            }}>✕</button>
           </div>
-          <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '1rem' }}>
-            <button onClick={clearHistory} style={{...buttonStyle, flex: 1}}>Clear</button>
-            <button onClick={exportChat} style={{...buttonStyle, flex: 1}}>Export</button>
+          <div style={{ display: 'flex', gap: '8px', marginBottom: '16px' }}>
+            <button onClick={clearHistory} style={{...buttonStyle, flex: 1, fontWeight: '600'}}>Clear</button>
+            <button onClick={exportChat} style={{...buttonStyle, flex: 1, fontWeight: '600'}}>Export</button>
           </div>
-          <div style={{ fontSize: '0.85rem', opacity: 0.8 }}>
+          <div style={{ fontSize: '0.875rem', opacity: 0.8, fontWeight: '500' }}>
             {messages.length} messages
           </div>
         </div>
       )}
 
-      {/* Image Generation Modal */}
+      {/* Image Generation Modal with glassmorphism */}
       {showImageGen && (
         <div style={{
           position: 'absolute',
@@ -327,14 +363,20 @@ export default function App() {
           maxWidth: '500px',
           background: colors.messageBg,
           border: `1px solid ${colors.border}`,
-          borderRadius: '12px',
-          padding: '2rem',
+          borderRadius: '20px',
+          padding: '32px',
           zIndex: 1000,
-          backdropFilter: 'blur(10px)'
+          backdropFilter: 'blur(20px)',
+          boxShadow: `0 8px 32px ${colors.shadow}`
         }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '1rem' }}>
-            <h3 style={{ margin: 0 }}>🎨 Generate Image</h3>
-            <button onClick={() => setShowImageGen(false)} style={buttonStyle}>✕</button>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
+            <h3 style={{ margin: 0, fontWeight: '700', fontSize: '1.5rem' }}>🎨 Generate Image</h3>
+            <button onClick={() => setShowImageGen(false)} style={{
+              ...buttonStyle,
+              minWidth: '40px',
+              minHeight: '40px',
+              padding: '8px'
+            }}>✕</button>
           </div>
           <input
             type="text"
@@ -344,14 +386,16 @@ export default function App() {
             placeholder="Describe the image you want..."
             style={{
               width: '100%',
-              padding: '1rem',
-              borderRadius: '8px',
-              border: `1px solid ${colors.border}`,
+              padding: '16px 20px',
+              borderRadius: '12px',
+              border: `2px solid ${colors.border}`,
               background: colors.inputBg,
               color: colors.text,
               fontSize: '1rem',
-              marginBottom: '1rem',
-              outline: 'none'
+              marginBottom: '16px',
+              outline: 'none',
+              transition: 'all 0.3s ease',
+              fontWeight: '400'
             }}
           />
           <button
@@ -359,15 +403,18 @@ export default function App() {
             disabled={isGeneratingImage || !imagePrompt.trim()}
             style={{
               width: '100%',
-              padding: '1rem',
-              borderRadius: '8px',
+              padding: '16px',
+              borderRadius: '12px',
               background: isGeneratingImage || !imagePrompt.trim()
                 ? 'rgba(100, 100, 100, 0.5)'
                 : 'linear-gradient(135deg, #00f0ff, #ff00aa)',
               color: isGeneratingImage || !imagePrompt.trim() ? '#666' : '#000',
               border: 'none',
-              fontWeight: 'bold',
-              cursor: isGeneratingImage || !imagePrompt.trim() ? 'not-allowed' : 'pointer'
+              fontWeight: '700',
+              fontSize: '1rem',
+              cursor: isGeneratingImage || !imagePrompt.trim() ? 'not-allowed' : 'pointer',
+              transition: 'all 0.3s ease',
+              boxShadow: !isGeneratingImage && imagePrompt.trim() ? `0 4px 16px ${colors.shadow}` : 'none'
             }}
           >
             {isGeneratingImage ? 'Generating...' : 'Generate Image'}
@@ -375,37 +422,41 @@ export default function App() {
         </div>
       )}
 
-      {/* Messages */}
+      {/* Messages with enhanced styling */}
       <div style={{
         flex: 1,
         overflowY: 'auto',
-        padding: '1.5rem',
+        padding: '24px',
         background: colors.messageBg,
-        borderRadius: '12px',
-        marginBottom: '1rem',
-        border: `1px solid ${colors.border}`
+        borderRadius: '16px',
+        marginBottom: '16px',
+        border: `1px solid ${colors.border}`,
+        backdropFilter: 'blur(20px)',
+        boxShadow: `0 4px 16px ${colors.shadow}`
       }}>
         {messages.map((msg, i) => (
           <div
             key={i}
             style={{
-              marginBottom: '1rem',
+              marginBottom: '16px',
               display: 'flex',
               flexDirection: 'column',
               alignItems: msg.sender === 'user' ? 'flex-end' : 'flex-start'
             }}
           >
             <div style={{
-              padding: '1rem 1.5rem',
-              borderRadius: '18px',
+              padding: '16px 20px',
+              borderRadius: '20px',
               background: msg.sender === 'user' ? colors.userBubble : colors.botBubble,
               border: msg.sender === 'bot' ? `1px solid ${colors.border}` : 'none',
               color: msg.sender === 'user' ? '#000' : colors.text,
               maxWidth: '75%',
-              boxShadow: msg.sender === 'user' ? '0 4px 15px rgba(0, 240, 255, 0.4)' : 'none',
+              boxShadow: msg.sender === 'user' ? `0 4px 16px ${colors.shadow}` : `0 2px 8px ${colors.shadow}`,
               fontSize: '1rem',
-              lineHeight: '1.5',
-              position: 'relative'
+              lineHeight: '1.6',
+              position: 'relative',
+              fontWeight: '400',
+              backdropFilter: msg.sender === 'bot' ? 'blur(10px)' : 'none'
             }}>
               {msg.text}
               {msg.sender === 'bot' && (
@@ -414,9 +465,12 @@ export default function App() {
                   style={{
                     ...buttonStyle,
                     position: 'absolute',
-                    bottom: '0.5rem',
-                    right: '0.5rem',
-                    fontSize: '0.8rem'
+                    bottom: '8px',
+                    right: '8px',
+                    fontSize: '0.875rem',
+                    minWidth: '32px',
+                    minHeight: '32px',
+                    padding: '6px'
                   }}
                 >
                   {isSpeaking ? '🔇' : '🔊'}
@@ -429,9 +483,9 @@ export default function App() {
                 alt="Generated"
                 style={{
                   maxWidth: '75%',
-                  borderRadius: '12px',
-                  marginTop: '0.5rem',
-                  boxShadow: '0 4px 15px rgba(0, 0, 0, 0.2)'
+                  borderRadius: '16px',
+                  marginTop: '8px',
+                  boxShadow: `0 4px 16px ${colors.shadow}`
                 }}
               />
             )}
@@ -440,16 +494,17 @@ export default function App() {
         
         {isLoading && (
           <div style={{
-            marginBottom: '1rem',
+            marginBottom: '16px',
             display: 'flex',
             justifyContent: 'flex-start'
           }}>
             <div style={{
-              padding: '1rem 1.5rem',
-              borderRadius: '18px',
+              padding: '16px 20px',
+              borderRadius: '20px',
               background: colors.botBubble,
               border: `1px solid ${colors.border}`,
-              color: colors.text
+              color: colors.text,
+              backdropFilter: 'blur(10px)'
             }}>
               <span style={{ animation: 'pulse 1.5s ease-in-out infinite' }}>
                 Thinking... 🤔
@@ -461,21 +516,28 @@ export default function App() {
         <div ref={messagesEndRef} />
       </div>
 
-      {/* Input Area */}
+      {/* Input Area with enhanced styling */}
       <div style={{ 
         display: 'flex', 
-        gap: '0.5rem',
+        gap: '8px',
         background: colors.messageBg,
-        padding: '1rem',
-        borderRadius: '12px',
-        border: `1px solid ${colors.border}`
+        padding: '16px',
+        borderRadius: '16px',
+        border: `1px solid ${colors.border}`,
+        backdropFilter: 'blur(20px)',
+        boxShadow: `0 4px 16px ${colors.shadow}`
       }}>
         <button
           onClick={toggleVoiceInput}
           style={{
             ...buttonStyle,
+            minWidth: '48px',
+            minHeight: '48px',
             background: isListening ? 'linear-gradient(135deg, #ff0080, #ff00aa)' : colors.inputBg,
-            animation: isListening ? 'pulse 1s ease-in-out infinite' : 'none'
+            animation: isListening ? 'pulse 1s ease-in-out infinite' : 'none',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center'
           }}
         >
           🎤
@@ -489,31 +551,34 @@ export default function App() {
           disabled={isLoading}
           style={{
             flex: 1,
-            padding: '1rem 1.5rem',
-            borderRadius: '999px',
-            border: `1px solid ${colors.border}`,
+            padding: '14px 20px',
+            borderRadius: '24px',
+            border: `2px solid ${colors.border}`,
             background: colors.inputBg,
             color: colors.text,
             fontSize: '1rem',
-            outline: 'none'
+            outline: 'none',
+            transition: 'all 0.3s ease',
+            fontWeight: '400'
           }}
         />
         <button
           onClick={handleSend}
           disabled={isLoading || !input.trim()}
           style={{
-            padding: '1rem 2rem',
-            borderRadius: '999px',
+            padding: '14px 32px',
+            borderRadius: '24px',
             background: isLoading || !input.trim()
               ? 'rgba(100, 100, 100, 0.5)'
               : 'linear-gradient(135deg, #00f0ff, #ff00aa)',
             color: isLoading || !input.trim() ? '#666' : '#000',
             border: 'none',
-            fontWeight: 'bold',
+            fontWeight: '700',
             fontSize: '1rem',
             cursor: isLoading || !input.trim() ? 'not-allowed' : 'pointer',
-            transition: 'all 0.3s',
-            boxShadow: !isLoading && input.trim() ? '0 0 20px rgba(0, 240, 255, 0.5)' : 'none'
+            transition: 'all 0.3s ease',
+            boxShadow: !isLoading && input.trim() ? `0 4px 16px ${colors.shadow}` : 'none',
+            minHeight: '48px'
           }}
         >
           {isLoading ? '...' : 'Send'}
@@ -522,8 +587,27 @@ export default function App() {
 
       <style>{`
         @keyframes pulse {
-          0%, 100% { opacity: 1; }
-          50% { opacity: 0.5; }
+          0%, 100% { opacity: 1; transform: scale(1); }
+          50% { opacity: 0.7; transform: scale(0.98); }
+        }
+        
+        /* Scrollbar styling */
+        ::-webkit-scrollbar {
+          width: 8px;
+        }
+        
+        ::-webkit-scrollbar-track {
+          background: ${colors.glass};
+          border-radius: 4px;
+        }
+        
+        ::-webkit-scrollbar-thumb {
+          background: ${colors.border};
+          border-radius: 4px;
+        }
+        
+        ::-webkit-scrollbar-thumb:hover {
+          background: ${colors.shadow};
         }
       `}</style>
     </div>
@@ -531,12 +615,14 @@ export default function App() {
 }
 
 const buttonStyle = {
-  padding: '0.5rem 1rem',
-  borderRadius: '8px',
-  background: 'rgba(0, 240, 255, 0.2)',
+  padding: '12px 16px',
+  borderRadius: '12px',
+  background: 'rgba(0, 240, 255, 0.15)',
   border: '1px solid rgba(0, 240, 255, 0.3)',
   color: 'inherit',
   cursor: 'pointer',
   fontSize: '1rem',
-  transition: 'all 0.3s'
+  transition: 'all 0.3s ease',
+  fontWeight: '600',
+  backdropFilter: 'blur(10px)'
 }
